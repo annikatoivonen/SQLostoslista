@@ -73,6 +73,7 @@ export default function App() {
         <StatusBar style="auto" />
       </View>
         <View style={{flex:2}}>
+          <Text style={{fontSize:24}}>Shopping list</Text>
         <FlatList
         keyExtractor={item => item.id.toString()}
         renderItem={({item}) =>
