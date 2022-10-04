@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, TextInput, View, Button, Flatlist } from 'react-native';
+import { StyleSheet, TextInput, View, Button, FlatList, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import * as SQLite from'expo-sqlite';
 
@@ -7,26 +7,26 @@ const db = SQLite.openDatabase('coursedb.db');
 
 export default function App() {
 
-  const [credit, setCredit] = useState('');
-  const [title, setTitle] = useState('');
-  const [courses, setCourses] = useState([]);
+  const [product, setProduct] = useState('');
+  const [amount, setAmount] = useState('');
+  const [list, setList] = useState([]);
 
   useEffect(() => {
     db.transaction(tx => {
-      tx.executeSql('create table if not exists course (id integer primary key not null, credits text, title text);');
+      tx.executeSql('create table if not exists list (id integer primary key not null, products text, amount text);');
   }, null, updateList);
   }, []);
 
   const saveItem = () => {
     db.transaction(tx => { 
-      tx.executeSql('insert into course (credits, title) values (?, ?);', [credit, title]);
+      tx.executeSql('insert into list (products, amount) values (?, ?);', [product, amount]);
       }, null, updateList)}
 
   const updateList = () => {  
     db.transaction(tx => {
-      tx.executeSql('select * from course;', [], (_, result) => {
+      tx.executeSql('select * from list;', [], (_, result) => {
         console.log(result);
-      setCourses(result.rows._array);
+      setList(result.rows._array);
       }
       );   
     }, null, null);
@@ -35,7 +35,7 @@ export default function App() {
   const deleteItem = (id) => {
       db.transaction(
       tx => {
-        tx.executeSql('delete from course where id = ?;', [id]);
+        tx.executeSql('delete from list where id = ?;', [id]);
     }, null, updateList)}
 
     const listSeparator = () => {
@@ -53,18 +53,18 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <View>
+      <View style={{flex: 1, justifyContent:'center'}}>
         <TextInput
         style={styles.input}
         placeholder="Product"
-        onChangeText={text => setTitle(text)}
-        value={title}>
+        onChangeText={setProduct}
+        value={product}>
         </TextInput>
         <TextInput
         style={styles.input}
         placeholder="Amount"
-        onChangeText={text => setCredit(text)}
-        value={credit}>
+        onChangeText={setAmount}
+        value={amount}>
         </TextInput>
         <Button
         title="SAVE"
@@ -72,17 +72,18 @@ export default function App() {
         </Button>
         <StatusBar style="auto" />
       </View>
-        <Flatlist
+        <View style={{flex:2}}>
+        <FlatList
         keyExtractor={item => item.id.toString()}
         renderItem={({item}) =>
-        <View>
-        <Text>{item.title},{item.credit}</Text>
-        <Text style={{color: '#0000ff'}} onPress={() => deleteItem(item.id)}>bought</Text>
+        <View style={{flexDirection:'row'}}>
+        <Text>{item.products}, {item.amount}</Text>
+        <Text style={{color: '#0000ff'}} onPress={() => deleteItem(item.id)}> bought</Text>
         </View>}
-        data={courses}
+        data={list}
         ItemSeparatorComponent={listSeparator}
         />
-      
+      </View>
     </View>
   );
 }
